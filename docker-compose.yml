@@ -1,0 +1,36 @@
+services:
+
+  train:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dreamerv3:latest
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ${LOGDIR:?Set LOGDIR in .env}:/logdir
+    environment:
+      - XLA_PYTHON_CLIENT_PREALLOCATE=false
+      - TF_CPP_MIN_LOG_LEVEL=3
+    command: >
+      python dreamerv3/main.py
+      --logdir /logdir/{timestamp}
+      --configs crafter size1m
+      --run.train_ratio 32
+      --logger.outputs jsonl,tensorboard
+      --run.report_every 1000
+      --env.hires 256
+
+  tensorboard:
+    image: tensorflow/tensorflow:2.15.0
+    network_mode: host
+    volumes:
+      - ${LOGDIR:?Set LOGDIR in .env}:/logdir:ro
+    command: tensorboard --logdir /logdir --host 0.0.0.0 --port 6008
+    restart: unless-stopped

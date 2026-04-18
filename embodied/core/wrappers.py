@@ -288,6 +288,30 @@ class DiscretizeAction(Wrapper):
     return self.env.step({**action, self._key: continuous})
 
 
+class HiResCapture(Wrapper):
+  """Snapshot the image at its current (high) resolution into log/image_hires,
+  then let a subsequent ResizeImage wrapper downsample `image` for the model.
+  The log/ prefix ensures the agent encoder/decoder ignore this key."""
+
+  def __init__(self, env, src='image', dst='log/image_hires'):
+    super().__init__(env)
+    self._src = src
+    self._dst = dst
+
+  @functools.cached_property
+  def obs_space(self):
+    spaces = dict(self.env.obs_space)
+    if self._src in spaces:
+      spaces[self._dst] = spaces[self._src]
+    return spaces
+
+  def step(self, action):
+    obs = self.env.step(action)
+    if self._src in obs:
+      obs[self._dst] = obs[self._src].copy()
+    return obs
+
+
 class ResizeImage(Wrapper):
 
   def __init__(self, env, size=(64, 64)):

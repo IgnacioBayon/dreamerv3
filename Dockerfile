@@ -23,7 +23,7 @@ ENV PATH="/venv/bin:$PATH"
 RUN pip install -U pip setuptools
 
 # Envs
-RUN wget -O - https://gist.githubusercontent.com/danijar/ca6ab917188d2e081a8253b3ca5c36d3/raw/install-dmlab.sh | sh
+# RUN wget -O - https://gist.githubusercontent.com/danijar/ca6ab917188d2e081a8253b3ca5c36d3/raw/install-dmlab.sh | sh
 RUN pip install ale_py==0.9.0 autorom[accept-rom-license]==0.6.1
 RUN pip install procgen_mirror
 RUN pip install crafter

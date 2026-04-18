@@ -27,6 +27,7 @@ defaults:
     user: ''
 
   env:
+    hires: 0  # 0=disabled; set to e.g. 256 to capture 256x256 frames for eval videos
     atari: {size: [96, 96], repeat: 4, sticky: True, gray: True, actions: all, lives: unused, noops: 30, autostart: False, pooling: 2, aggregate: max, resize: pillow, clip_reward: False}
     procgen: {size: [96, 96], resize: pillow}
     crafter: {size: [64, 64], logs: False}

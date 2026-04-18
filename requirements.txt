@@ -16,4 +16,5 @@ nvidia-cuda-nvcc-cu12<=12.2
 optax
 portal>=3.5.0
 scope>=0.4.4
+tensorflow-cpu==2.15.0
 tqdm

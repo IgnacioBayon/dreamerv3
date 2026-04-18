@@ -289,9 +289,19 @@ class Agent(embodied.jax.Agent):
     # Video preds
     for key in self.dec.imgkeys:
       assert obs[key].dtype == jnp.uint8
-      true = obs[key][:RB]
+      hires_key = f'log/{key}_hires'
+      true = data[hires_key][:RB] if hires_key in data else obs[key][:RB]
       pred = jnp.concatenate([obsrecons[key].pred(), imgrecons[key].pred()], 1)
       pred = jnp.clip(pred * 255, 0, 255).astype(jnp.uint8)
+      if hires_key in data:
+        H, W = true.shape[2:4]
+        h, w = pred.shape[2:4]
+        if H != h or W != w:
+          RB_, T_, _, _, C_ = pred.shape
+          pred = jax.image.resize(
+              pred.reshape(RB_ * T_, h, w, C_).astype(jnp.float32),
+              (RB_ * T_, H, W, C_), method='nearest',
+          ).astype(jnp.uint8).reshape(RB_, T_, H, W, C_)
       error = ((i32(pred) - i32(true) + 255) / 2).astype(np.uint8)
       video = jnp.concatenate([true, pred, error], 2)
 

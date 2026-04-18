@@ -238,11 +238,19 @@ def make_env(config, index, **overrides):
     ctor = getattr(module, cls)
   kwargs = config.env.get(suite, {})
   kwargs.update(overrides)
+  hires = config.env.get('hires', 0)
+  model_size = tuple(kwargs.get('size', [64, 64]))
+  if hires:
+    kwargs = dict(kwargs)
+    kwargs['size'] = [hires, hires]
   if kwargs.pop('use_seed', False):
     kwargs['seed'] = hash((config.seed, index)) % (2 ** 32 - 1)
   if kwargs.pop('use_logdir', False):
     kwargs['logdir'] = elements.Path(config.logdir) / f'env{index}'
   env = ctor(task, **kwargs)
+  if hires:
+    env = embodied.wrappers.HiResCapture(env)
+    env = embodied.wrappers.ResizeImage(env, model_size)
   return wrap_env(env, config)
 
 
